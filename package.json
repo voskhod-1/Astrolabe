@@ -1,7 +1,7 @@
 {
   "name": "quiz-app",
   "version": "0.1.0",
-  "homepage": "https://ваш-логин.github.io/ваш-репозиторий",
+  "homepage": "https://voskhod-1.github.io/Astrolabe/",
   "private": true,
   "dependencies": {
     "react": "^18.2.0",
