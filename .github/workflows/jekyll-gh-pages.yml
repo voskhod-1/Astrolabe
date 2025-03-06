@@ -36,4 +36,5 @@ jobs:
           folder: build    # Папка с собранным проектом
           token: ${{ secrets.GITHUB_TOKEN }}
           clean: true
+          name: build-nonstatic
           commit-message: "Deploy React app to GitHub Pages"
