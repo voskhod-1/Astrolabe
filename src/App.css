@@ -1,0 +1,86 @@
+.app {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  
+  h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .timer {
+    text-align: center;
+    font-size: 1.2em;
+    color: #d9534f;
+    margin-bottom: 20px;
+  }
+  
+  .question {
+    margin-bottom: 20px;
+  }
+  
+  .answers {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .answer {
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #f9f9f9;
+    transition: background-color 0.3s, border-color 0.3s;
+  }
+  
+  .answer:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .selected {
+    background-color: #d0e0ff;
+    border-color: #007bff;
+  }
+  
+  .confirm-btn {
+    padding: 10px 20px;
+    background-color: #5cb85c;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+  }
+  
+  .confirm-btn:hover {
+    background-color: #4cae4c;
+  }
+  
+  .result {
+    text-align: center;
+  }
+  
+  .message {
+    font-size: 1.2em;
+    margin: 10px 0;
+  }
+  
+  .success {
+    color: #5cb85c;
+  }
+  
+  .warning {
+    color: #d9534f;
+  }
+  
+  img {
+    max-width: 100%;
+    height: auto;
+  }
