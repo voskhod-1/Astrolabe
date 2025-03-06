@@ -33,7 +33,7 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages  # Ветка для деплоя
-          folder: build     # Папка с собранным проектом
+          folder: build/Astrolabe    # Папка с собранным проектом
           token: ${{ secrets.GITHUB_TOKEN }}
           clean: true
           commit-message: "Deploy React app to GitHub Pages"
