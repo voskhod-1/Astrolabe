@@ -13,7 +13,7 @@ function App() {
   const parseMarkdown = (text) => {
     const lines = text.split('\n').filter(line => line.trim());
     const qa = [];
-    let currentQuestion = null;
+    let currentQuestion = [];
     let currentImage = null;
     let currentAnswers = [];
 
@@ -22,9 +22,9 @@ function App() {
         const match = line.match(/\!\[.*?\]\((.*?)\)/);
         currentImage = match ? match[1] : null;
       } else if (line.endsWith('?')) {
-        if (currentQuestion) {
+        if (currentQuestion.length > 0) {
           qa.push({
-            question: currentQuestion,
+            question: currentQuestion.join(' '),
             image: currentImage,
             answers: currentAnswers.map(a => ({
               text: a.replace(/\*\*(.*?)\*\*/g, '$1'),
@@ -34,15 +34,17 @@ function App() {
           currentAnswers = [];
           currentImage = null;
         }
-        currentQuestion = line;
+        currentQuestion = [line];
       } else if (line.startsWith('+')) {
         currentAnswers.push(line.replace(/^\+\s*/, ''));
+      } else {
+        currentQuestion.push(line);
       }
     });
 
-    if (currentQuestion) {
+    if (currentQuestion.length > 0) {
       qa.push({
-        question: currentQuestion,
+        question: currentQuestion.join(' '),
         image: currentImage,
         answers: currentAnswers.map(a => ({
           text: a.replace(/\*\*(.*?)\*\*/g, '$1'),
@@ -56,13 +58,26 @@ function App() {
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
-    if (!file.name.endsWith('.md')) return;
+    if (!file) return;
+
+    if (!file.name.endsWith('.md')) {
+      alert('Загрузите файл в формате .md');
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const parsed = parseMarkdown(e.target.result);
-      setQaList(parsed);
-      setSelectedQuestions([]);
+      try {
+        const parsed = parseMarkdown(e.target.result);
+        if (parsed.length === 0) {
+          alert('Файл не содержит вопросов в корректном формате');
+          return;
+        }
+        setQaList(parsed);
+        setSelectedQuestions([]);
+      } catch (error) {
+        alert('Ошибка при парсинге файла');
+      }
     };
     reader.readAsText(file);
   };
@@ -73,7 +88,7 @@ function App() {
       ...qa,
       answers: [...qa.answers].sort(() => Math.random() - 0.5)
     })).sort(() => Math.random() - 0.5);
-    
+
     setShuffledQA(shuffled);
     setUserAnswers({});
     setErrorCount(0);
@@ -82,17 +97,18 @@ function App() {
   };
 
   useEffect(() => {
+    let timer;
     if (timeLeft > 0 && shuffledQA.length > 0 && !showResult) {
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         setTimeLeft(prev => prev - 1);
       }, 1000);
-      
+
       if (timeLeft === 1) {
         checkAnswers();
       }
-      
-      return () => clearTimeout(timer);
     }
+
+    return () => clearTimeout(timer);
   }, [timeLeft, shuffledQA, showResult]);
 
   const handleDragStart = (e, answer) => {
@@ -103,6 +119,7 @@ function App() {
 
   const handleDragEnd = (e) => {
     e.target.style.transform = 'scale(1)';
+    e.dataTransfer.clearData();
   };
 
   const handleDragOver = (e) => {
@@ -117,14 +134,14 @@ function App() {
   const handleDrop = (e, question) => {
     e.preventDefault();
     e.target.style.borderColor = '#ccc';
-    
+
+    if (userAnswers.hasOwnProperty(question)) return;
+
     const answer = JSON.parse(e.dataTransfer.getData('text/plain'));
     setUserAnswers(prev => ({
       ...prev,
       [question]: answer
     }));
-    
-    e.target.style.transform = 'scale(1)';
   };
 
   const checkAnswers = () => {
@@ -235,6 +252,9 @@ function App() {
                 draggable
                 onDragStart={(e) => handleDragStart(e, answer)}
                 onDragEnd={handleDragEnd}
+                role="button"
+                tabIndex="0"
+                aria-label={`Вариант ответа: ${answer.text}`}
               >
                 {answer.text}
               </div>
@@ -255,7 +275,120 @@ function App() {
       )}
 
       <style jsx>{`
-        /* ... (все стили из предыдущего ответа с мобильной адаптацией) */
+        .app {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 20px;
+          font-family: Arial, sans-serif;
+        }
+        
+        .file-input {
+          margin: 20px 0;
+        }
+        
+        .setup {
+          margin-bottom: 40px;
+        }
+        
+        .checkbox-item {
+          display: flex;
+          align-items: center;
+          margin: 5px 0;
+        }
+        
+        .start-btn {
+          background-color: #4CAF50;
+          color: white;
+          padding: 10px 20px;
+          border: none;
+          cursor: pointer;
+          margin-top: 20px;
+        }
+        
+        .test-container {
+          border-top: 2px solid #eee;
+          padding-top: 20px;
+        }
+        
+        .timer {
+          font-size: 1.2em;
+          margin-bottom: 20px;
+        }
+        
+        .qa-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 20px;
+          margin-bottom: 40px;
+        }
+        
+        .question-droppable {
+          border: 2px dashed #ccc;
+          padding: 15px;
+          border-radius: 8px;
+          transition: border-color 0.3s;
+        }
+        
+        .question-image {
+          max-width: 100%;
+          height: auto;
+          margin-bottom: 10px;
+        }
+        
+        .answers-panel {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 15px;
+        }
+        
+        .answer-draggable {
+          padding: 10px;
+          background-color: #f0f0f0;
+          border-radius: 5px;
+          cursor: grab;
+          user-select: none;
+          transition: transform 0.2s;
+        }
+        
+        .dropped-answer {
+          margin-top: 10px;
+          padding: 8px;
+          border-radius: 4px;
+        }
+        
+        .correct {
+          background-color: #d4edda;
+          border: 1px solid #c3e6cb;
+        }
+        
+        .result {
+          border-top: 2px solid #eee;
+          padding-top: 20px;
+        }
+        
+        .success {
+          color: #155724;
+          background-color: #d4edda;
+          padding: 10px;
+          border-radius: 4px;
+        }
+        
+        .warning {
+          color: #856404;
+          background-color: #fff3cd;
+          padding: 10px;
+          border-radius: 4px;
+        }
+        
+        @media (max-width: 768px) {
+          .qa-grid {
+            grid-template-columns: 1fr;
+          }
+          
+          .answers-panel {
+            grid-template-columns: 1fr;
+          }
+        }
       `}</style>
     </div>
   );
